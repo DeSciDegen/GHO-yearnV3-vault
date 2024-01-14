@@ -7,6 +7,9 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 // Import interfaces for many popular DeFi projects, or add your own!
 //import "../interfaces/<protocol>/<Interface>.sol";
 
+import "./interfaces/IGhoToken.sol";
+import "./interfaces/ISwapRouter.sol";
+
 /**
  * The `TokenizedStrategy` variable can be used to retrieve the strategies
  * specific storage data your contract.
@@ -23,10 +26,18 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 contract Strategy is BaseStrategy {
     using SafeERC20 for ERC20;
 
+    address public constant GHO = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f;
+    address public constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+
+    ISwapRouter public constant router =
+        ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
+
     constructor(
         address _asset,
         string memory _name
-    ) BaseStrategy(_asset, _name) {}
+    ) BaseStrategy(_asset, _name) {
+        IGhoToken(GHO).approve(address(router), type(uint256).max);
+    }
 
     /*//////////////////////////////////////////////////////////////
                 NEEDED TO BE OVERRIDDEN BY STRATEGIST
@@ -47,6 +58,20 @@ contract Strategy is BaseStrategy {
         // TODO: implement deposit logic EX:
         //
         //      lendingPool.deposit(address(asset), _amount ,0);
+
+        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
+            .ExactInputSingleParams({
+                tokenIn: GHO,
+                tokenOut: USDT,
+                fee: 500, // pool fee 0.5%
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountIn: _amount,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            });
+
+        uint256 _out = router.exactInputSingle(params);
     }
 
     /**

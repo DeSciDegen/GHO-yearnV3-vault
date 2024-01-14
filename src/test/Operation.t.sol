@@ -19,6 +19,18 @@ contract OperationTest is Setup {
         // TODO: add additional check on strat params
     }
 
+    function test_swap(uint256 _amount) public {
+        uint256 _amount = 200e18;
+        vm.assume(_amount > minFuzzAmount && _amount < maxFuzzAmount);
+        ERC20 usdt = ERC20(tokenAddrs["USDT"]);
+
+        mintAndDepositIntoStrategy(strategy, user, _amount);
+
+        // TODO: add more asserts
+        assertNotEq(asset.balanceOf(address(strategy)), _amount);
+        assertNotEq(usdt.balanceOf(address(strategy)), 0);
+    }
+
     function test_operation(uint256 _amount) public {
         vm.assume(_amount > minFuzzAmount && _amount < maxFuzzAmount);
 
