@@ -8,7 +8,8 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 //import "../interfaces/<protocol>/<Interface>.sol";
 
 import "./interfaces/IGhoToken.sol";
-import "./interfaces/ISwapRouter.sol";
+import "./interfaces/ICurvePool.sol";
+import "./interfaces/ICurveGauge.sol";
 
 /**
  * The `TokenizedStrategy` variable can be used to retrieve the strategies
@@ -26,17 +27,19 @@ import "./interfaces/ISwapRouter.sol";
 contract Strategy is BaseStrategy {
     using SafeERC20 for ERC20;
 
-    address public constant GHO = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f;
-    address public constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+    address public constant gho = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f; // index 0
+    address public constant crvusd = 0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E; // index 1
 
-    ISwapRouter public constant router =
-        ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
+    ICurvePool public constant pool =
+        ICurvePool(0x86152dF0a0E321Afb3B0B9C4deb813184F365ADa);
+    ICurveGauge public constant gauge =
+        ICurveGauge(0xFc58C946A2D541cfA29Ad8c16FC2994323e34458);
 
     constructor(
         address _asset,
         string memory _name
     ) BaseStrategy(_asset, _name) {
-        IGhoToken(GHO).approve(address(router), type(uint256).max);
+        IGhoToken(gho).approve(address(pool), type(uint256).max);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -59,19 +62,11 @@ contract Strategy is BaseStrategy {
         //
         //      lendingPool.deposit(address(asset), _amount ,0);
 
-        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
-            .ExactInputSingleParams({
-                tokenIn: GHO,
-                tokenOut: USDT,
-                fee: 500, // pool fee 0.5%
-                recipient: address(this),
-                deadline: block.timestamp,
-                amountIn: _amount,
-                amountOutMinimum: 0,
-                sqrtPriceLimitX96: 0
-            });
+        // Deposit GHO into crvUSD/GHO pool.
+        uint256 _out = pool.add_liqudity([_amount, 0], 0);
 
-        uint256 _out = router.exactInputSingle(params);
+        // Stake crvUSDGHO LP.
+        gauge.deposit(_out);
     }
 
     /**
@@ -99,6 +94,13 @@ contract Strategy is BaseStrategy {
         // TODO: implement withdraw logic EX:
         //
         //      lendingPool.withdraw(address(asset), _amount);
+
+        // Unstake crvUSDGHO LP.
+        uint256 _lp_required = pool.calc_token_amount([_amount, 0], false);
+        gauge.withdraw(_lp_required);
+
+        // Withdraw GHO
+        pool.remove_liqudity_one_coin(_lp_required, 0, 0);
     }
 
     /**
