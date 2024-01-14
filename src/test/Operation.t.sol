@@ -13,8 +13,8 @@ contract OperationTest is Test, Setup {
 
     function setUp() public virtual override {
         super.setUp();
-        ICurveGauge gauge = ICurveGauge(address(tokenAddrs["gauge-deposit"]));
-        ICurvePool pool = ICurvePool(tokenAddrs["gho-crvUSD-pool"]);
+        gauge = ICurveGauge(address(tokenAddrs["gauge-deposit"]));
+        pool = ICurvePool(tokenAddrs["gho-crvUSD-pool"]);
     }
 
     function test_setupStrategyOK() public {
@@ -28,7 +28,6 @@ contract OperationTest is Test, Setup {
     }
 
     function test_deposit() public {
-        ICurveGauge gauge = ICurveGauge(address(tokenAddrs["gauge-deposit"]));
         uint256 _amount = 200e18;
         vm.assume(_amount > minFuzzAmount && _amount < maxFuzzAmount);
         uint256 gaugeBalanceBefore = gauge.balanceOf(address(strategy));
