@@ -153,5 +153,8 @@ contract Setup is ExtendedTest, IEvents {
         tokenAddrs[
             "gauge-deposit"
         ] = 0xFc58C946A2D541cfA29Ad8c16FC2994323e34458;
+        tokenAddrs[
+            "gho-crvUSD-pool"
+        ] = 0x86152dF0a0E321Afb3B0B9C4deb813184F365ADa;
     }
 }

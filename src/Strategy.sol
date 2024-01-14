@@ -4,12 +4,15 @@ pragma solidity 0.8.18;
 import {BaseStrategy, ERC20} from "@tokenized-strategy/BaseStrategy.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import "forge-std/console.sol";
+
 // Import interfaces for many popular DeFi projects, or add your own!
 //import "../interfaces/<protocol>/<Interface>.sol";
 
 import "./interfaces/IGhoToken.sol";
 import "./interfaces/ICurvePool.sol";
 import "./interfaces/ICurveGauge.sol";
+import "./interfaces/IDepositZap.sol";
 
 /**
  * The `TokenizedStrategy` variable can be used to retrieve the strategies
@@ -34,12 +37,14 @@ contract Strategy is BaseStrategy {
         ICurvePool(0x86152dF0a0E321Afb3B0B9C4deb813184F365ADa);
     ICurveGauge public constant gauge =
         ICurveGauge(0xFc58C946A2D541cfA29Ad8c16FC2994323e34458);
+    IDepositZap public constant zap =
+        IDepositZap(0xA79828DF1850E8a3A3064576f380D90aECDD3359);
 
     constructor(
         address _asset,
         string memory _name
     ) BaseStrategy(_asset, _name) {
-        IGhoToken(gho).approve(address(pool), type(uint256).max);
+        IGhoToken(gho).approve(address(zap), type(uint256).max);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -63,10 +68,18 @@ contract Strategy is BaseStrategy {
         //      lendingPool.deposit(address(asset), _amount ,0);
 
         // Deposit GHO into crvUSD/GHO pool.
-        uint256 _out = pool.add_liqudity([_amount, 0], 0);
+        uint256 _out = zap.add_liquidity(
+            address(pool),
+            [_amount, 0, 0, 0],
+            0,
+            address(this)
+        );
+
+        console.log(_out);
+        console.log(pool.balanceOf(address(this)));
 
         // Stake crvUSDGHO LP.
-        gauge.deposit(_out);
+        // gauge.deposit(_out);
     }
 
     /**

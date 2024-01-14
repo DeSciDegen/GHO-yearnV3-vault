@@ -4,13 +4,16 @@ pragma solidity ^0.8.18;
 import "forge-std/console.sol";
 import {Setup, ERC20, IStrategyInterface} from "./utils/Setup.sol";
 import "../interfaces/ICurveGauge.sol";
+import "../interfaces/ICurvePool.sol";
 
 contract OperationTest is Setup {
     ICurveGauge gauge;
+    ICurvePool pool;
 
     function setUp() public virtual override {
         super.setUp();
         ICurveGauge gauge = ICurveGauge(tokenAddrs["gauge-deposit"]);
+        ICurvePool pool = ICurvePool(tokenAddrs["gho-crvUSD-pool"]);
     }
 
     function test_setupStrategyOK() public {
@@ -24,11 +27,12 @@ contract OperationTest is Setup {
     }
 
     function test_deposit() public {
-        uint256 _amount = 2000e18;
+        uint256 _amount = 200e18;
         vm.assume(_amount > minFuzzAmount && _amount < maxFuzzAmount);
 
         mintAndDepositIntoStrategy(strategy, user, _amount);
-        assertGe(gauge.balanceOf(address(strategy)), 0, "not deposited");
+
+        assertNotEq(pool.balanceOf(address(strategy)), 0);
     }
 
     function test_operation(uint256 _amount) public {
