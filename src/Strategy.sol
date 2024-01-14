@@ -75,11 +75,9 @@ contract Strategy is BaseStrategy {
             address(this)
         );
 
-        console.log(_out);
-        console.log(pool.balanceOf(address(this)));
-
         // Stake crvUSDGHO LP.
-        // gauge.deposit(_out);
+        IGhoToken(address(pool)).approve(address(gauge), _out);
+        gauge.deposit(_out);
     }
 
     /**
