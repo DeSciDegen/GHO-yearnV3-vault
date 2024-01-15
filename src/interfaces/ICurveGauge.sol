@@ -9,4 +9,8 @@ interface ICurveGauge {
     function withdraw(uint256) external;
 
     function claim_rewards(address) external;
+
+    function claim_rewards() external;
+
+    function working_balances(address) external view returns (uint256);
 }

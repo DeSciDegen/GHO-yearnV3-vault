@@ -4,6 +4,7 @@ pragma solidity ^0.8.18;
 import "forge-std/console.sol";
 import "forge-std/Test.sol";
 import {Setup, ERC20, IStrategyInterface} from "./utils/Setup.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/ICurveGauge.sol";
 import "../interfaces/ICurvePool.sol";
 
@@ -55,6 +56,31 @@ contract OperationTest is Test, Setup {
         strategy.withdraw(_amount, user, user);
 
         assertEq(strategy.balanceOf(user), 0);
+    }
+
+    function test_claim_crv() public {
+        uint256 _amount = 20_000e18;
+
+        uint256 crvBefore = IERC20(tokenAddrs["CRV"]).balanceOf(
+            address(strategy)
+        );
+
+        vm.prank(user);
+        mintAndDepositIntoStrategy(strategy, user, _amount);
+
+        skip(10 days);
+        console.log(gauge.working_balances(address(strategy)));
+
+        vm.prank(keeper);
+        (uint256 profit, uint256 loss) = strategy.report();
+
+        console.log(profit);
+        console.log(loss);
+
+        assertGt(
+            IERC20(tokenAddrs["CRV"]).balanceOf(address(strategy)),
+            crvBefore
+        );
     }
 
     function test_operation(uint256 _amount) public {

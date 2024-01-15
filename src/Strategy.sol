@@ -157,6 +157,7 @@ contract Strategy is BaseStrategy {
         //      }
         //      _totalAssets = aToken.balanceOf(address(this)) + asset.balanceOf(address(this));
         //
+        gauge.claim_rewards();
         _totalAssets = asset.balanceOf(address(this));
     }
 
