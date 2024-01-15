@@ -39,6 +39,22 @@ contract OperationTest is Test, Setup {
             gaugeBalanceBefore,
             "staking failed"
         );
+        assertGt(strategy.balanceOf(user), 0);
+    }
+
+    function test_withdraw_all() public {
+        uint256 _amount = 200e18;
+
+        vm.prank(user);
+        mintAndDepositIntoStrategy(strategy, user, _amount);
+        assertGt(strategy.balanceOf(user), 0);
+
+        skip(1 days);
+
+        vm.prank(user);
+        strategy.withdraw(_amount, user, user);
+
+        assertEq(strategy.balanceOf(user), 0);
     }
 
     function test_operation(uint256 _amount) public {

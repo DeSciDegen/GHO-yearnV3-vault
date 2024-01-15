@@ -107,7 +107,9 @@ contract Strategy is BaseStrategy {
         //      lendingPool.withdraw(address(asset), _amount);
 
         // Unstake crvUSDGHO LP.
-        uint256 _lp_required = pool.calc_token_amount([_amount, 0], false);
+        // uint256 _lp_required = pool.calc_token_amount([_amount, 0], false);
+        uint256 _lp_required = gauge.balanceOf(msg.sender);
+
         gauge.withdraw(_lp_required);
 
         // Withdraw GHO
