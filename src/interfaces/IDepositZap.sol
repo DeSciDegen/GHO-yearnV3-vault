@@ -8,4 +8,12 @@ interface IDepositZap {
         uint256 _min_mint_amount,
         address _receiver
     ) external returns (uint256);
+
+    function remove_liquidity_one_coin(
+        address _pool,
+        uint256 _burn_amount,
+        int128 i,
+        uint256 _min_amount,
+        address _receiver
+    ) external returns (uint256);
 }

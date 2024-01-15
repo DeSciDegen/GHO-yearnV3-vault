@@ -111,7 +111,14 @@ contract Strategy is BaseStrategy {
         gauge.withdraw(_lp_required);
 
         // Withdraw GHO
-        pool.remove_liqudity_one_coin(_lp_required, 0, 0);
+        IGhoToken(address(pool)).approve(address(zap), _lp_required);
+        uint256 _out = zap.remove_liquidity_one_coin(
+            address(pool),
+            _lp_required,
+            0,
+            0,
+            address(this)
+        );
     }
 
     /**
