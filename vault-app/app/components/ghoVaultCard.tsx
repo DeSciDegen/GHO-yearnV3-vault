@@ -10,6 +10,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BoltIcon } from "@heroicons/react/24/solid";
 import { ArrowTrendingUpIcon } from "@heroicons/react/24/solid";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 const GHOVaultCard = () => {
   return (
     <a href="">
@@ -21,7 +23,7 @@ const GHOVaultCard = () => {
               <AvatarImage src="https://github.com/shadcn.png" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
-            <span className="mt-2 ml-3"> GHO-crvUSD Vault</span>
+            <span className="mt-2 ml-3"> GHO Vault</span>
           </CardTitle>
           <CardDescription>
             Optimize your yield with detailed insights

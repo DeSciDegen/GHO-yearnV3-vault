@@ -5,6 +5,8 @@ import { NavigationMenuDemo } from "./components/nav";
 import Hero from "./components/hero";
 import PortfolioCard from "./components/potfolio";
 import GHOVaultCard from "./components/ghoVaultCard";
+import { Button } from "@/components/ui/button";
+import MyComponent from "./components/test";
 
 export default function Home() {
   return (
@@ -22,6 +24,7 @@ export default function Home() {
       <PortfolioCard />
 
       <GHOVaultCard />
+      <MyComponent />
     </>
   );
 }
