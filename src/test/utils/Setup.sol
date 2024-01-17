@@ -5,6 +5,7 @@ import "forge-std/console.sol";
 import {ExtendedTest} from "./ExtendedTest.sol";
 
 import {Strategy, ERC20} from "../../Strategy.sol";
+import {BalancerStrategy} from "../../BalancerStrategy.sol";
 import {IStrategyInterface} from "../../interfaces/IStrategyInterface.sol";
 
 // Inherit the events so they can be checked if desired.
@@ -71,7 +72,7 @@ contract Setup is ExtendedTest, IEvents {
     function setUpStrategy() public returns (address) {
         // we save the strategy as a IStrategyInterface to give it the needed interface
         IStrategyInterface _strategy = IStrategyInterface(
-            address(new Strategy(address(asset), "Tokenized Strategy"))
+            address(new BalancerStrategy(address(asset), "Tokenized Strategy"))
         );
 
         // set keeper
@@ -157,5 +158,8 @@ contract Setup is ExtendedTest, IEvents {
         tokenAddrs[
             "gho-crvUSD-pool"
         ] = 0x86152dF0a0E321Afb3B0B9C4deb813184F365ADa;
+        tokenAddrs[
+            "gho-usdt-usdc-balancer-pool"
+        ] = 0x8353157092ED8Be69a9DF8F95af097bbF33Cb2aF;
     }
 }
