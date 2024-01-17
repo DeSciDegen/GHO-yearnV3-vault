@@ -3,6 +3,7 @@ pragma solidity 0.8.18;
 
 import {BaseStrategy, ERC20} from "@tokenized-strategy/BaseStrategy.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 import "forge-std/console.sol";
 
@@ -107,16 +108,20 @@ contract Strategy is BaseStrategy {
         //      lendingPool.withdraw(address(asset), _amount);
 
         // Unstake crvUSDGHO LP.
-        // uint256 _lp_required = pool.calc_token_amount([_amount, 0], false);
-        uint256 _lp_required = gauge.balanceOf(msg.sender);
+        uint256 _desired_lp_amount = pool.calc_token_amount(
+            [_amount, 0],
+            false
+        );
+        uint256 _staked_tokens = gauge.balanceOf(address(this));
 
-        gauge.withdraw(_lp_required);
+        uint256 _lp_amount = Math.min(_desired_lp_amount, _staked_tokens);
+        gauge.withdraw(_lp_amount);
 
         // Withdraw GHO
-        IGhoToken(address(pool)).approve(address(zap), _lp_required);
+        IGhoToken(address(pool)).approve(address(zap), _lp_amount);
         uint256 _out = zap.remove_liquidity_one_coin(
             address(pool),
-            _lp_required,
+            _lp_amount,
             0,
             0,
             address(this)

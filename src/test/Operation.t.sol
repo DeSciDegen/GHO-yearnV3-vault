@@ -53,7 +53,7 @@ contract OperationTest is Test, Setup {
         skip(1 days);
 
         vm.prank(user);
-        strategy.withdraw(_amount, user, user);
+        strategy.redeem(_amount, user, user);
 
         assertEq(strategy.balanceOf(user), 0);
     }
