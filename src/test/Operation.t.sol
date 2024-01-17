@@ -43,7 +43,25 @@ contract OperationTest is Test, Setup {
         assertGt(strategy.balanceOf(user), 0);
     }
 
+    // TODO: fuzz maxLoss
     function test_withdraw_all() public {
+        uint256 _amount = 200e18;
+
+        vm.prank(user);
+        mintAndDepositIntoStrategy(strategy, user, _amount);
+        uint256 shares = strategy.balanceOf(user);
+        assertGt(shares, 0);
+
+        skip(10 days);
+
+        uint256 maxLoss = 10_000; // 100%
+        vm.prank(user);
+        strategy.withdraw(shares, user, user, maxLoss);
+
+        assertEq(strategy.balanceOf(user), 0);
+    }
+
+    function test_redeem_all() public {
         uint256 _amount = 200e18;
 
         vm.prank(user);
@@ -81,6 +99,21 @@ contract OperationTest is Test, Setup {
             IERC20(tokenAddrs["CRV"]).balanceOf(address(strategy)),
             crvBefore
         );
+    }
+
+    function test_is_profitable() public {
+        uint256 _amount = 200e18;
+
+        vm.prank(user);
+        mintAndDepositIntoStrategy(strategy, user, _amount);
+        assertGt(strategy.balanceOf(user), 0);
+
+        skip(10 days);
+
+        vm.prank(user);
+        strategy.redeem(_amount, user, user);
+
+        assertGt(asset.balanceOf(user), _amount);
     }
 
     function test_operation(uint256 _amount) public {
