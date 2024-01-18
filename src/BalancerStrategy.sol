@@ -31,6 +31,7 @@ contract BalancerStrategy is BaseStrategy {
     using SafeERC20 for ERC20;
 
     address public constant GHO = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f;
+    address public constant BAL_LP = 0x8353157092ED8Be69a9DF8F95af097bbF33Cb2aF;
 
     IVault public constant balancerVault =
         IVault(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
@@ -48,6 +49,15 @@ contract BalancerStrategy is BaseStrategy {
         IGhoToken(GHO).approve(address(balancerVault), type(uint256).max);
     }
 
+    function _convertERC20sToAssets(
+        IERC20[] memory tokens
+    ) internal pure returns (IAsset[] memory assets) {
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            assets := tokens
+        }
+    }
+
     /*//////////////////////////////////////////////////////////////
                 NEEDED TO BE OVERRIDDEN BY STRATEGIST
     //////////////////////////////////////////////////////////////*/
@@ -63,33 +73,39 @@ contract BalancerStrategy is BaseStrategy {
      * @param _amount The amount of 'asset' that the strategy should attempt
      * to deposit in the yield source.
      */
+
     function _deployFunds(uint256 _amount) internal override {
         // TODO: implement deposit logic EX:
         //
         //      lendingPool.deposit(address(asset), _amount ,0);
 
-        // Deposit GHO into GHO/USDT/USDC pool.
-        IAsset[] memory assets = new IAsset[](1);
-        assets[0] = IAsset(GHO);
-
-        uint256[] memory maxAmountsIn = new uint256[](assets.length);
-        maxAmountsIn[0] = _amount;
-
-        bytes memory userData = abi.encode(
-            StablePoolUserData.JoinKind.INIT, // unsure about this
-            maxAmountsIn
-        );
-
-        console.log(assets.length);
-        console.log(maxAmountsIn.length);
-
-        IVault.JoinPoolRequest memory request = IVault.JoinPoolRequest(
-            assets,
-            maxAmountsIn,
-            userData,
+        // Deposit GHO into Balancer Pool
+        IVault.FundManagement memory funds = IVault.FundManagement(
+            address(this),
+            false,
+            payable(address(this)),
             false
         );
-        balancerVault.joinPool(poolId, address(this), address(this), request);
+
+        IVault.SingleSwap memory singleSwap = IVault.SingleSwap(
+            poolId,
+            IVault.SwapKind.GIVEN_IN,
+            IAsset(GHO),
+            IAsset(BAL_LP),
+            _amount,
+            ""
+        );
+
+        uint256 _out = balancerVault.swap(
+            singleSwap,
+            funds,
+            0,
+            block.timestamp
+        );
+
+        // Stake LP
+
+        console.log(_out);
     }
 
     /**
