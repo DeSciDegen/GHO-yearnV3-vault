@@ -12,7 +12,7 @@ import "forge-std/console.sol";
 
 import "./interfaces/IGhoToken.sol";
 import "./interfaces/ICurvePool.sol";
-import "./interfaces/ICurveGauge.sol";
+import "./interfaces/convex/IConvex.sol";
 import "./interfaces/IDepositZap.sol";
 
 /**
@@ -33,13 +33,17 @@ contract Strategy is BaseStrategy {
 
     address public constant gho = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f; // index 0
     address public constant crvusd = 0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E; // index 1
+    address public constant cvxDeposit =
+        0x453CAFf58C6a1E01f7E19Dbf5Fa8382ca8cA3Ec1;
 
     ICurvePool public constant pool =
         ICurvePool(0x86152dF0a0E321Afb3B0B9C4deb813184F365ADa);
-    ICurveGauge public constant gauge =
-        ICurveGauge(0xFc58C946A2D541cfA29Ad8c16FC2994323e34458);
+    IConvex public constant convex =
+        IConvex(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
     IDepositZap public constant zap =
         IDepositZap(0xA79828DF1850E8a3A3064576f380D90aECDD3359);
+
+    uint256 public constant PID = 213;
 
     constructor(
         address _asset,
@@ -77,8 +81,8 @@ contract Strategy is BaseStrategy {
         );
 
         // Stake crvUSDGHO LP.
-        IGhoToken(address(pool)).approve(address(gauge), _out);
-        gauge.deposit(_out);
+        IGhoToken(address(pool)).approve(address(convex), _out);
+        bool _staked = convex.deposit(PID, _out, true);
     }
 
     /**
@@ -112,10 +116,10 @@ contract Strategy is BaseStrategy {
             [_amount, 0],
             false
         );
-        uint256 _staked_tokens = gauge.balanceOf(address(this));
+        uint256 _staked_tokens = IGhoToken(cvxDeposit).balanceOf(address(this));
 
         uint256 _lp_amount = Math.min(_desired_lp_amount, _staked_tokens);
-        gauge.withdraw(_lp_amount);
+        bool _unstaked = convex.withdraw(PID, _lp_amount);
 
         // Withdraw GHO
         IGhoToken(address(pool)).approve(address(zap), _lp_amount);
@@ -162,7 +166,7 @@ contract Strategy is BaseStrategy {
         //      }
         //      _totalAssets = aToken.balanceOf(address(this)) + asset.balanceOf(address(this));
         //
-        gauge.claim_rewards();
+        // gauge.claim_rewards();
         _totalAssets = asset.balanceOf(address(this));
     }
 
