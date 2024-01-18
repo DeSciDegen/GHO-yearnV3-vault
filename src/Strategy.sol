@@ -107,10 +107,6 @@ contract Strategy is BaseStrategy {
      * @param _amount, The amount of 'asset' to be freed.
      */
     function _freeFunds(uint256 _amount) internal override {
-        // TODO: implement withdraw logic EX:
-        //
-        //      lendingPool.withdraw(address(asset), _amount);
-
         // Unstake crvUSDGHO LP.
         uint256 _desired_lp_amount = pool.calc_token_amount(
             [_amount, 0],

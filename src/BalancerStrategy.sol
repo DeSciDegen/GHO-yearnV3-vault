@@ -136,9 +136,36 @@ contract BalancerStrategy is BaseStrategy {
      * @param _amount, The amount of 'asset' to be freed.
      */
     function _freeFunds(uint256 _amount) internal override {
-        // TODO: implement withdraw logic EX:
-        //
-        //      lendingPool.withdraw(address(asset), _amount);
+        uint256 bptAmount = AURA_POOL.redeem(
+            _amount,
+            address(this),
+            address(this)
+        );
+
+        IVault.FundManagement memory funds = IVault.FundManagement(
+            address(this),
+            false,
+            payable(address(this)),
+            false
+        );
+
+        IVault.SingleSwap memory singleSwap = IVault.SingleSwap(
+            poolId,
+            IVault.SwapKind.GIVEN_IN,
+            IAsset(BAL_LP),
+            IAsset(GHO),
+            bptAmount,
+            ""
+        );
+
+        uint256 _out = balancerVault.swap(
+            singleSwap,
+            funds,
+            0,
+            block.timestamp
+        );
+
+        console.log(_out);
     }
 
     /**

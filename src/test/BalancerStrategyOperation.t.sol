@@ -38,6 +38,27 @@ contract BalancerStrategyOperationTest is Test, Setup {
         assertGt(strategy.balanceOf(user), 0);
     }
 
+    // TODO: fuzz
+    function test_withdraw_with_max_loss() public {
+        address userTwo = makeAddr("userTwo");
+        vm.prank(userTwo);
+        mintAndDepositIntoStrategy(strategy, userTwo, 500e18);
+
+        vm.prank(user);
+        mintAndDepositIntoStrategy(strategy, user, 200e18);
+        uint256 shares = strategy.balanceOf(user);
+        assertGt(shares, 0);
+
+        skip(10 days);
+
+        uint256 maxLoss = 2_000; // 20%
+        vm.prank(user);
+        strategy.withdraw(shares, user, user, maxLoss);
+
+        assertEq(strategy.balanceOf(user), 0);
+        assertApproxEq(asset.balanceOf(user), 200e18, 20e18);
+    }
+
     function test_is_profitable() public {
         uint256 _amount = 200e18;
 
