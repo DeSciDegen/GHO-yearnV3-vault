@@ -5,13 +5,16 @@ import "forge-std/console.sol";
 import "forge-std/Test.sol";
 import {Setup, ERC20, IStrategyInterface} from "./utils/Setup.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
 contract BalancerStrategyOperationTest is Test, Setup {
-    IERC20 pool; // ERC20 because we only need to test balance
+    IERC4626 pool;
+    IERC4626 auraPool;
 
     function setUp() public virtual override {
         super.setUp();
-        pool = IERC20(tokenAddrs["gho-usdt-usdc-balancer-pool"]);
+        pool = IERC4626(tokenAddrs["gho-usdt-usdc-balancer-pool"]);
+        auraPool = IERC4626(tokenAddrs["gho-usdt-usdc-aura-pool"]);
     }
 
     function test_setupStrategyOK() public {
@@ -31,7 +34,7 @@ contract BalancerStrategyOperationTest is Test, Setup {
 
         mintAndDepositIntoStrategy(strategy, user, _amount);
 
-        assertGt(pool.balanceOf(address(strategy)), 0, "deposit failed");
+        assertGt(auraPool.balanceOf(address(strategy)), 0, "deposit failed");
         assertGt(strategy.balanceOf(user), 0);
     }
 

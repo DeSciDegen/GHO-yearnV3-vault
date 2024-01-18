@@ -161,5 +161,8 @@ contract Setup is ExtendedTest, IEvents {
         tokenAddrs[
             "gho-usdt-usdc-balancer-pool"
         ] = 0x8353157092ED8Be69a9DF8F95af097bbF33Cb2aF;
+        tokenAddrs[
+            "gho-usdt-usdc-aura-pool"
+        ] = 0xBDD6984C3179B099E9D383ee2F44F3A57764BF7d;
     }
 }

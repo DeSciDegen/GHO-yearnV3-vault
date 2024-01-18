@@ -3,6 +3,8 @@ pragma solidity 0.8.18;
 
 import {BaseStrategy, ERC20} from "@tokenized-strategy/BaseStrategy.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
 import "forge-std/console.sol";
 
@@ -39,6 +41,8 @@ contract BalancerStrategy is BaseStrategy {
         bytes32(
             0x8353157092ed8be69a9df8f95af097bbf33cb2af0000000000000000000005d9
         );
+    IERC4626 public constant AURA_POOL =
+        IERC4626(0xBDD6984C3179B099E9D383ee2F44F3A57764BF7d);
 
     // IPool public constant pool = IPool(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
 
@@ -47,6 +51,7 @@ contract BalancerStrategy is BaseStrategy {
         string memory _name
     ) BaseStrategy(_asset, _name) {
         IGhoToken(GHO).approve(address(balancerVault), type(uint256).max);
+        IERC20(BAL_LP).approve(address(AURA_POOL), type(uint256).max);
     }
 
     function _convertERC20sToAssets(
@@ -104,8 +109,9 @@ contract BalancerStrategy is BaseStrategy {
         );
 
         // Stake LP
+        uint256 rewards_out = AURA_POOL.deposit(_out, address(this));
 
-        console.log(_out);
+        console.log(rewards_out);
     }
 
     /**
