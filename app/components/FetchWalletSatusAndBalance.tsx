@@ -9,6 +9,12 @@ interface ABIResponse {
   result: string;
 }
 
+declare global {
+  interface Window {
+    ethereum: any;
+  }
+}
+
 const WalletStatus: React.FC = () => {
   const { address, isConnecting, isDisconnected } = useAccount();
   const [tokenBalance, setTokenBalance] = useState<string>("");
@@ -27,6 +33,7 @@ const WalletStatus: React.FC = () => {
 
           if (data.status === "1") {
             const abi = JSON.parse(data.result); // Parse the ABI
+
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const tokenContract = new ethers.Contract(
               tokenAddress,

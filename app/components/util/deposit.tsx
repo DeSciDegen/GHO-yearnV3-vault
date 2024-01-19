@@ -6,15 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useAccount } from "wagmi";
 import { ethers } from "ethers";
-import ExampleAbi from ".abi/exampleAbi.json"; // Import your vault contract's ABI
-import WalletStatus from "../FetchWalletSatusAndBalance";
-const Deposit = ({ updateBalance }) => {
+
+const Deposit = ({ updateBalance }: { updateBalance: () => void }) => {
   const [amount, setAmount] = useState("");
   const [isDepositing, setIsDepositing] = useState(false);
   const { isConnected } = useAccount();
-
-  // Use the tokenBalance state from WalletStatus
-  const { tokenBalance } = WalletStatus;
 
   const handleDeposit = async () => {
     if (!isConnected || !amount) {
@@ -75,14 +71,15 @@ const Deposit = ({ updateBalance }) => {
       alert("Deposit successful");
     } catch (error) {
       console.error("Error during the deposit:", error);
-      alert("Error during the deposit: " + error.message);
+      alert("Error during the deposit: " + (error as Error).message);
     } finally {
       setIsDepositing(false);
     }
   };
 
   return (
-    <div className="grid grid-cols-5 mt-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 mt-8 gap-4">
+      {/* First Column */}
       <div>
         <Label>From Wallet</Label>
         <div className="flex h-10 w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:ring-offset-neutral-950 dark:placeholder:text-neutral-400 dark:focus-visible:ring-neutral-300">
@@ -101,6 +98,7 @@ const Deposit = ({ updateBalance }) => {
         <p className="font-light text-sm mt-1">You have 0.00 GHO</p>
       </div>
 
+      {/* Second Column */}
       <div className="ml-1">
         <Label>Amount</Label>
         <Input
@@ -119,7 +117,9 @@ const Deposit = ({ updateBalance }) => {
           </Button>
         </div>
       </div>
-      <div className="mx-auto justify-center items-center">
+
+      {/* Third Column */}
+      <div className="col-span-1 md:col-span-2 lg:col-span-1 mx-auto justify-center items-center">
         <ArrowLongRightIcon className="w-10 h-10 lg:w-20 lg:h-20" />
         <Button
           type="button"
@@ -137,6 +137,8 @@ const Deposit = ({ updateBalance }) => {
           )}
         </Button>
       </div>
+
+      {/* Fourth Column */}
       <div>
         <Label>To Vault</Label>
         <div className="flex h-10 w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:ring-offset-neutral-950 dark:placeholder:text-neutral-400 dark:focus-visible:ring-neutral-300">
@@ -154,6 +156,8 @@ const Deposit = ({ updateBalance }) => {
         </div>
         <p className="font-normal text-gray-400  text-sm mt-1">10%</p>
       </div>
+
+      {/* Fifth Column */}
       <div className="ml-1">
         <Label>You will receive</Label>
         <Input type="number" placeholder="0" />

@@ -174,10 +174,10 @@ const Vault = () => {
               </PopoverContent>
             </Popover>
             <TabsContent value="deposit">
-              <Deposit />
+              <Deposit updateBalance={() => {}} />
             </TabsContent>
             <TabsContent value="withdraw">
-              <Withdraw />
+              <Withdraw updateBalance={() => {}} />
             </TabsContent>
           </Tabs>
         </CardHeader>
