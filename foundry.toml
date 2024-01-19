@@ -9,6 +9,7 @@ remappings = [
     "forge-std/=lib/forge-std/src/",
     "@tokenized-strategy/=lib/tokenized-strategy/src/",
     "@periphery/=lib/tokenized-strategy-periphery/src/",
+    "@balancer/=lib/balancer-v2-monorepo/pkg/",
 ]
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

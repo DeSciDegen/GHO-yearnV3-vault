@@ -5,16 +5,18 @@ import {BaseStrategy, ERC20} from "@tokenized-strategy/BaseStrategy.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
+import {IVault} from "@balancer/interfaces/contracts/vault/IVault.sol";
+import {IAsset} from "@balancer/interfaces/contracts/vault/IAsset.sol";
+import {StablePoolUserData} from "@balancer/interfaces/contracts/pool-stable/StablePoolUserData.sol";
+import {IBalancerQueries} from "@balancer/interfaces/contracts/standalone-utils/IBalancerQueries.sol";
 
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "forge-std/console.sol";
 
 // Import interfaces for many popular DeFi projects, or add your own!
 //import "../interfaces/<protocol>/<Interface>.sol";
 
 import "./interfaces/IGhoToken.sol";
-import "./interfaces/balancer/IVault.sol";
-
-import "./lib/balancer/StablePoolUserData.sol";
 
 /**
  * The `TokenizedStrategy` variable can be used to retrieve the strategies
@@ -34,6 +36,9 @@ contract BalancerStrategy is BaseStrategy {
 
     address public constant GHO = 0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f;
     address public constant BAL_LP = 0x8353157092ED8Be69a9DF8F95af097bbF33Cb2aF;
+
+    address public constant BAL_QUERY =
+        0xE39B5e3B6D74016b2F6A9673D7d7493B6DF549d5;
 
     IVault public constant balancerVault =
         IVault(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
@@ -136,17 +141,35 @@ contract BalancerStrategy is BaseStrategy {
      * @param _amount, The amount of 'asset' to be freed.
      */
     function _freeFunds(uint256 _amount) internal override {
-        uint256 bptAmount = AURA_POOL.redeem(
-            _amount,
-            address(this),
-            address(this)
-        );
-
         IVault.FundManagement memory funds = IVault.FundManagement(
             address(this),
             false,
             payable(address(this)),
             false
+        );
+
+        IVault.SingleSwap memory querySwap = IVault.SingleSwap(
+            poolId,
+            IVault.SwapKind.GIVEN_OUT,
+            IAsset(BAL_LP),
+            IAsset(GHO),
+            _amount,
+            ""
+        );
+
+        uint256 _desired_lp_amount = IBalancerQueries(BAL_QUERY).querySwap(
+            querySwap,
+            funds
+        );
+
+        uint256 _staked_tokens = AURA_POOL.balanceOf(address(this));
+
+        uint256 _lp_amount = Math.min(_desired_lp_amount, _staked_tokens);
+
+        uint256 bptAmount = AURA_POOL.redeem(
+            _lp_amount,
+            address(this),
+            address(this)
         );
 
         IVault.SingleSwap memory singleSwap = IVault.SingleSwap(
