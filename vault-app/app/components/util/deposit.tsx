@@ -1,10 +1,86 @@
-import React from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ArrowLongRightIcon } from "@heroicons/react/24/solid";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { useAccount } from "wagmi";
+import { ethers } from "ethers";
+import ExampleAbi from ".abi/exampleAbi.json"; // Import your vault contract's ABI
+import WalletStatus from "../FetchWalletSatusAndBalance";
+const Deposit = ({ updateBalance }) => {
+  const [amount, setAmount] = useState("");
+  const [isDepositing, setIsDepositing] = useState(false);
+  const { isConnected } = useAccount();
 
-const Deposit = () => {
+  // Use the tokenBalance state from WalletStatus
+  const { tokenBalance } = WalletStatus;
+
+  const handleDeposit = async () => {
+    if (!isConnected || !amount) {
+      console.error("Wallet not connected or no amount entered");
+      alert("Wallet not connected or no amount entered");
+      return;
+    }
+
+    setIsDepositing(true); // Set loading state
+
+    try {
+      // Replace with your actual vault contract address and ABI
+      const vaultContractAddress = "0xdA816459F1AB5631232FE5e97a05BBBb94970c95";
+      const vaultContractABI = [
+        // This can be imported via a JSON file or api call
+        {
+          // for the sake of a demo will use hardcoded example
+          constant: false,
+          inputs: [
+            {
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "deposit",
+          outputs: [],
+          payable: true,
+          stateMutability: "payable",
+          type: "function",
+        },
+      ];
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const vaultContract = new ethers.Contract(
+        vaultContractAddress,
+        vaultContractABI,
+        signer
+      );
+
+      // Convert the input amount to ethers.BigNumber
+      const depositAmount = ethers.utils.parseEther(amount);
+
+      // Call the deposit function in your vault contract
+      const tx = await vaultContract.deposit(depositAmount);
+
+      // Wait for the transaction to be mined
+      await tx.wait();
+
+      console.log("Deposit successful");
+      alert("Deposit successful");
+      // Update component state as needed to reflect the deposit
+      // ...
+
+      // Notify the parent component to update the balance
+      updateBalance();
+
+      alert("Deposit successful");
+    } catch (error) {
+      console.error("Error during the deposit:", error);
+      alert("Error during the deposit: " + error.message);
+    } finally {
+      setIsDepositing(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-5 mt-8">
       <div>
@@ -27,7 +103,13 @@ const Deposit = () => {
 
       <div className="ml-1">
         <Label>Amount</Label>
-        <Input type="number" placeholder="0" />
+        <Input
+          type="number"
+          placeholder="Enter amount to deposit"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          min="0"
+        />
         <div className="flex">
           <p className="font-normal flex text-gray-400  text-sm mt-1 mr-10">
             $0.00
@@ -39,7 +121,21 @@ const Deposit = () => {
       </div>
       <div className="mx-auto justify-center items-center">
         <ArrowLongRightIcon className="w-10 h-10 lg:w-20 lg:h-20" />
-        <Button className="mt-5 lg:mt-0">Deposit</Button>
+        <Button
+          type="button"
+          onClick={handleDeposit}
+          disabled={isDepositing}
+          className="mt-5 lg:mt-0"
+        >
+          {isDepositing ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Depositing...
+            </>
+          ) : (
+            "Deposit"
+          )}
+        </Button>
       </div>
       <div>
         <Label>To Vault</Label>

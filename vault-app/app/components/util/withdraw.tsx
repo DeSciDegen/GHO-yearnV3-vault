@@ -1,10 +1,76 @@
-import React from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ArrowLongRightIcon } from "@heroicons/react/24/solid";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { useAccount } from "wagmi";
+import { ethers } from "ethers";
 
-const Withdraw = () => {
+const Withdraw = ({ updateBalance }) => {
+  const [amount, setAmount] = useState("");
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const { isConnected } = useAccount();
+
+  const handleWithdraw = async () => {
+    if (!isConnected || !amount) {
+      console.error("Wallet not connected or no amount entered");
+      alert("Wallet not connected or no amount entered");
+      return;
+    }
+
+    setIsWithdrawing(true);
+
+    try {
+      const vaultContractAddress = "0xdA816459F1AB5631232FE5e97a05BBBb94970c95"; // Replace with your contract address
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      // For the sake of a demo, we will use a hardcoded example ABI
+      // but api call or imported JSON file would be here in production
+      const contractABI = [
+        {
+          constant: false,
+          inputs: [
+            {
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "withdraw",
+          outputs: [],
+          payable: false,
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        // Add other functions and events as needed
+      ];
+
+      const vaultContract = new ethers.Contract(
+        vaultContractAddress,
+        contractABI,
+        signer
+      );
+
+      const withdrawAmount = ethers.utils.parseEther(amount);
+
+      const tx = await vaultContract.withdraw(withdrawAmount);
+      await tx.wait();
+
+      console.log("Withdrawal successful");
+      // Update component state as needed to reflect the withdrawal
+      // ...
+
+      updateBalance(); // Notify the parent component to update the balance
+
+      alert("Withdrawal successful");
+    } catch (error) {
+      console.error("Error during the withdrawal:", error);
+      alert("Error during the withdrawal: " + error.message);
+    } finally {
+      setIsWithdrawing(false);
+    }
+  };
   return (
     <div className="grid grid-cols-5 mt-8">
       <div>
@@ -27,7 +93,13 @@ const Withdraw = () => {
 
       <div className="ml-1">
         <Label>Amount</Label>
-        <Input type="number" placeholder="0" />
+        <Input
+          type="number"
+          placeholder="Enter amount to withdraw"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          min="0"
+        />
         <div className="flex">
           <p className="font-normal flex text-gray-400  text-sm mt-1 mr-10">
             $0.00
@@ -39,7 +111,21 @@ const Withdraw = () => {
       </div>
       <div className="mx-auto justify-center items-center">
         <ArrowLongRightIcon className="w-10 h-10 lg:w-20 lg:h-20" />
-        <Button className="mt-5 lg:mt-0">Withdraw</Button>
+        <Button
+          type="button"
+          onClick={handleWithdraw}
+          disabled={isWithdrawing}
+          className="mt-5 lg:mt-0"
+        >
+          {isWithdrawing ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Withdrawing...
+            </>
+          ) : (
+            "Withdraw"
+          )}
+        </Button>
       </div>
       <div>
         <Label>To Wallet </Label>

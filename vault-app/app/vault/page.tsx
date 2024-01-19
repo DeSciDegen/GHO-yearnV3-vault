@@ -32,6 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import WalletStatus from "../components/FetchWalletSatusAndBalance";
 
 const Vault = () => {
   return (
@@ -117,7 +118,9 @@ const Vault = () => {
           </CardContent>
         </div>
       </Card>
-
+      <div className="mx-auto flex justify-center items-center">
+        <WalletStatus />
+      </div>
       <Card className="max-w-screen-xl mx-auto dark:bg-gray-900 text-card-foreground border border-border rounded-radius my-8 bg-[url('https://flowbite.s3.amazonaws.com/docs/jumbotron/hero-pattern.svg')] dark:bg-[url('https://flowbite.s3.amazonaws.com/docs/jumbotron/hero-pattern-dark.svg')]">
         <CardHeader>
           <Tabs defaultValue="deposit">

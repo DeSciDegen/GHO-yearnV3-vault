@@ -20,7 +20,7 @@ const WalletStatus: React.FC = () => {
       if (address) {
         try {
           const response = await fetch(
-            "https://api-sepolia.etherscan.io/api?module=contract&action=getabi&address=" + // Etherscan API call to get ABI
+            "https://api-sepolia.etherscan.io/api?module=contract&action=getabi&address=" + // Etherscan API call to get ABI of token
               tokenAddress
           );
           const data: ABIResponse = await response.json();
