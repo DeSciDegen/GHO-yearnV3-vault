@@ -6,7 +6,7 @@ import Hero from "./components/hero";
 import PortfolioCard from "./components/potfolio";
 import GHOVaultCard from "./components/ghoVaultCard";
 import { Button } from "@/components/ui/button";
-import MyComponent from "./components/test";
+import WalletStatus from "./components/FetchWalletSatusAndBalance";
 
 export default function Home() {
   return (
@@ -20,11 +20,15 @@ export default function Home() {
       >
         <ConnectKitButton />
       </div>
-
+      <div
+        className="mb-3"
+        style={{ display: "flex", justifyContent: "center" }}
+      >
+        <WalletStatus />
+      </div>
       <PortfolioCard />
 
       <GHOVaultCard />
-      <MyComponent />
     </>
   );
 }

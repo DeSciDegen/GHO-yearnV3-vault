@@ -14,13 +14,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const GHOVaultCard = () => {
   return (
-    <a href="">
-      <Card className="hover:shadow-lg hover:scale-105 transition-transform duration-300 max-w-screen-xl mt-20 mx-auto bg-card text-card-foreground border border-border rounded-radius">
+    <a href="/vault">
+      <Card className="mb-10 hover:shadow-lg hover:scale-105 transition-transform duration-300 max-w-screen-xl mt-20 mx-auto bg-card text-card-foreground border border-border rounded-radius">
         <CardHeader>
           <CardTitle className="flex py-2">
             {" "}
             <Avatar className="flex ">
-              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarImage src="https://s2.coinmarketcap.com/static/img/coins/64x64/23508.png" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
             <span className="mt-2 ml-3"> GHO Vault</span>
