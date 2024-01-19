@@ -4,6 +4,7 @@ pragma solidity 0.8.18;
 import {BaseStrategy, ERC20} from "@tokenized-strategy/BaseStrategy.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import "forge-std/console.sol";
 
@@ -40,6 +41,8 @@ contract Strategy is BaseStrategy {
 
     ICurvePool public constant pool =
         ICurvePool(0x86152dF0a0E321Afb3B0B9C4deb813184F365ADa);
+    ICurvePool public constant rewardsPool =
+        ICurvePool(0x4eBdF703948ddCEA3B11f675B4D1Fba9d2414A14);
     IConvex public constant convex =
         IConvex(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
     IConvexRewards public constant convexRewards =
@@ -54,6 +57,10 @@ contract Strategy is BaseStrategy {
         string memory _name
     ) BaseStrategy(_asset, _name) {
         IGhoToken(gho).approve(address(zap), type(uint256).max);
+        IGhoToken(crv).approve(address(zap), type(uint256).max);
+        IGhoToken(crvusd).approve(address(zap), type(uint256).max);
+        IGhoToken(address(pool)).approve(address(convex), type(uint256).max);
+        IGhoToken(address(pool)).approve(address(zap), type(uint256).max);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -85,7 +92,6 @@ contract Strategy is BaseStrategy {
         );
 
         // Stake crvUSDGHO LP.
-        IGhoToken(address(pool)).approve(address(convex), _out);
         bool _staked = convex.deposit(PID, _out, true);
     }
 
@@ -122,7 +128,6 @@ contract Strategy is BaseStrategy {
         bool _unstaked = convex.withdraw(PID, _lp_amount);
 
         // Withdraw GHO
-        IGhoToken(address(pool)).approve(address(zap), _lp_amount);
         uint256 _out = zap.remove_liquidity_one_coin(
             address(pool),
             _lp_amount,
@@ -166,8 +171,33 @@ contract Strategy is BaseStrategy {
         //      }
         //      _totalAssets = aToken.balanceOf(address(this)) + asset.balanceOf(address(this));
         //
-        bool _claimedSucessfully = convexRewards.getReward();
-        _totalAssets = asset.balanceOf(address(this));
+
+        if (!TokenizedStrategy.isShutdown()) {
+            // claim crv rewards
+            bool _claimedSucessfully = convexRewards.getReward();
+
+            // swap for crvUSD
+
+            uint256 _amount;
+            // redeposit crvUSD back into pool
+            uint256 _out = zap.add_liquidity(
+                address(pool),
+                [0, _amount, 0, 0],
+                0,
+                address(this)
+            );
+
+            // Stake crvUSDGHO LP.
+            bool _staked = convex.deposit(PID, _out, true);
+        }
+        // update total assets
+        _totalAssets = SafeMath.div(
+            SafeMath.mul(
+                IGhoToken(cvxDeposit).balanceOf(address(this)),
+                pool.get_virtual_price()
+            ),
+            1e18
+        );
     }
 
     /*//////////////////////////////////////////////////////////////
