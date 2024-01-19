@@ -77,6 +77,10 @@ contract OperationTest is Test, Setup {
     }
 
     function test_claim_crv() public {
+        address userTwo = makeAddr("userTwo");
+        vm.prank(userTwo);
+        mintAndDepositIntoStrategy(strategy, userTwo, 5_000e18);
+
         uint256 _amount = 20_000e18;
 
         uint256 crvBefore = IERC20(tokenAddrs["CRV"]).balanceOf(
