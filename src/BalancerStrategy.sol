@@ -17,6 +17,8 @@ import "forge-std/console.sol";
 //import "../interfaces/<protocol>/<Interface>.sol";
 
 import "./interfaces/IGhoToken.sol";
+import "./interfaces/aura/IRewardPool4626.sol";
+import "./interfaces/aura/IRewardPoolDepositWrapper.sol";
 
 /**
  * The `TokenizedStrategy` variable can be used to retrieve the strategies
@@ -46,8 +48,10 @@ contract BalancerStrategy is BaseStrategy {
         bytes32(
             0x8353157092ed8be69a9df8f95af097bbf33cb2af0000000000000000000005d9
         );
-    IERC4626 public constant AURA_POOL =
-        IERC4626(0xBDD6984C3179B099E9D383ee2F44F3A57764BF7d);
+    IRewardPool4626 public constant AURA_POOL =
+        IRewardPool4626(0xBDD6984C3179B099E9D383ee2F44F3A57764BF7d);
+    IRewardPoolDepositWrapper public constant AURA_WRAPPER =
+        IRewardPoolDepositWrapper(0xB188b1CB84Fb0bA13cb9ee1292769F903A9feC59);
 
     // IPool public constant pool = IPool(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
 
@@ -57,6 +61,7 @@ contract BalancerStrategy is BaseStrategy {
     ) BaseStrategy(_asset, _name) {
         IGhoToken(GHO).approve(address(balancerVault), type(uint256).max);
         IERC20(BAL_LP).approve(address(AURA_POOL), type(uint256).max);
+        // IERC20(BAL_LP).approve(address(AURA_WRAPPER), type(uint256).max);
     }
 
     function _convertERC20sToAssets(
@@ -117,6 +122,9 @@ contract BalancerStrategy is BaseStrategy {
         uint256 rewards_out = AURA_POOL.deposit(_out, address(this));
 
         console.log(rewards_out);
+        console.log(AURA_POOL.balanceOf(address(this)));
+        console.log(AURA_POOL.rewardPerToken());
+        console.log(AURA_POOL.rewardRate());
     }
 
     /**
@@ -225,6 +233,11 @@ contract BalancerStrategy is BaseStrategy {
         //      }
         //      _totalAssets = aToken.balanceOf(address(this)) + asset.balanceOf(address(this));
         //
+        if (!TokenizedStrategy.isShutdown()) {
+            // claim aura rewards from 0xBDD6984C3179B099E9D383ee2F44F3A57764BF7d
+            console.log(AURA_POOL.rewards(address(this)));
+            AURA_POOL.processIdleRewards();
+        }
     }
 
     /*//////////////////////////////////////////////////////////////

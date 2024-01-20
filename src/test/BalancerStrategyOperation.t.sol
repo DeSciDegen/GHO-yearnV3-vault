@@ -59,6 +59,29 @@ contract BalancerStrategyOperationTest is Test, Setup {
         assertApproxEq(asset.balanceOf(user), 200e18, 20e18);
     }
 
+    function test_harvest() public {
+        address userTwo = makeAddr("userTwo");
+        vm.prank(userTwo);
+        mintAndDepositIntoStrategy(strategy, userTwo, 5_000e18);
+
+        uint256 _amount = 20_000e18;
+
+        vm.prank(user);
+        mintAndDepositIntoStrategy(strategy, user, _amount);
+        // console.log(AURA_POOL.rewardTokens());
+        // console.log(AURA_POOL.rewards(address(this)));
+        skip(15 days);
+
+        vm.prank(keeper);
+        (uint256 profit, uint256 loss) = strategy.report();
+
+        console.log(profit);
+        console.log(loss);
+
+        // TODO: check convex balance
+        assertTrue(false);
+    }
+
     function test_is_profitable() public {
         uint256 _amount = 200e18;
 
