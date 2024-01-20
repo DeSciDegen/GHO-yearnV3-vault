@@ -33,4 +33,14 @@ interface ICurvePool {
     ) external returns (uint256);
 
     function balanceOf(address) external returns (uint256);
+
+    function exchange(
+        uint128 i,
+        uint128 j,
+        uint256 dx,
+        uint256 min_dy,
+        bool use_eth
+    ) external returns (uint256);
+
+    function coins(uint256 index) external returns (address);
 }

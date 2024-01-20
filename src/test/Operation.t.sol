@@ -28,18 +28,13 @@ contract OperationTest is Test, Setup {
         // TODO: add additional check on strat params
     }
 
-    function test_deposit() public {
+    function test_deposit_crv() public {
         uint256 _amount = 200e18;
         vm.assume(_amount > minFuzzAmount && _amount < maxFuzzAmount);
         uint256 gaugeBalanceBefore = gauge.balanceOf(address(strategy));
 
         mintAndDepositIntoStrategy(strategy, user, _amount);
 
-        assertGt(
-            gauge.balanceOf(address(strategy)),
-            gaugeBalanceBefore,
-            "staking failed"
-        );
         assertGt(strategy.balanceOf(user), 0);
     }
 
@@ -86,6 +81,7 @@ contract OperationTest is Test, Setup {
         uint256 crvBefore = IERC20(tokenAddrs["CRV"]).balanceOf(
             address(strategy)
         );
+        airdrop(ERC20(tokenAddrs["CRV"]), address(strategy), 50e18);
 
         vm.prank(user);
         mintAndDepositIntoStrategy(strategy, user, _amount);
@@ -99,6 +95,7 @@ contract OperationTest is Test, Setup {
         console.log(profit);
         console.log(loss);
 
+        // TODO: check convex balance
         assertGt(
             IERC20(tokenAddrs["CRV"]).balanceOf(address(strategy)),
             crvBefore

@@ -61,6 +61,7 @@ contract Strategy is BaseStrategy {
         IGhoToken(crvusd).approve(address(zap), type(uint256).max);
         IGhoToken(address(pool)).approve(address(convex), type(uint256).max);
         IGhoToken(address(pool)).approve(address(zap), type(uint256).max);
+        IERC20(crv).approve(address(rewardsPool), type(uint256).max);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -176,9 +177,24 @@ contract Strategy is BaseStrategy {
             // claim crv rewards
             bool _claimedSucessfully = convexRewards.getReward();
 
-            // swap for crvUSD
+            uint256 dx = IERC20(crv).balanceOf(address(this));
+            console.log(dx);
+            uint256 min_dy = 0; // TODO: use get_dy - slippage
 
-            uint256 _amount;
+            // debug
+            address crvAddress = rewardsPool.coins(2);
+            address crvUSDAddress = rewardsPool.coins(0);
+            console.log(crvAddress);
+            console.log(crvUSDAddress);
+
+            // swap for crvUSD
+            // debug
+            console.log(
+                IERC20(crv).allowance(address(this), address(rewardsPool)) > dx
+            );
+            uint256 _amount = rewardsPool.exchange(2, 0, dx, min_dy, false);
+            console.log(_amount);
+
             // redeposit crvUSD back into pool
             uint256 _out = zap.add_liquidity(
                 address(pool),
