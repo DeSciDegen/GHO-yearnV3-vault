@@ -40,6 +40,7 @@ This component retrieves the user wallet address and the token balance of your c
 The current token is set to GHO's address on sepolia but the address can be changed to any token. 
 
 
-
+A mock of the ui has been deployed to Vercel for anyone to see if you dont want to clone the branch 
+https://yearn-v3-vault-ui-demo.vercel.app/
 
 
