@@ -1,3 +1,0 @@
-@openzeppelin/=lib/openzeppelin-contracts/
-forge-std/=lib/forge-std/src/
-erc4626-tests/=lib/erc4626-tests/
